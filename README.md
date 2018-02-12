@@ -11,7 +11,7 @@ Prerequisite: MUST Complete hpc 101 webinar prior to class
 | 09:30 - 11:00 | Assessment of application scalability | hands on |
 | 11:00 - 11:30 | Message passing - collective communication | Slides |
 | 01:30 - 02:00 | Collective communication - master worker parallel programming | hands on |
-| 02:00 - 02:30 | Introduction to message passing | Slides |
+| 02:00 - 02:30 | Introduction to point to point communication | Slides |
 | 02:30 - 04:00 | Debugging message passing programs & consultation |
 
 <div></div>
