@@ -1,4 +1,4 @@
-# Point-to-Point Communication: Exercise 1
+# Point-to-Point Communication: Exercise 2 Solution
 
 Source-code solutions for this exericse may be found in the solutions folder associated with each programming language.
 
