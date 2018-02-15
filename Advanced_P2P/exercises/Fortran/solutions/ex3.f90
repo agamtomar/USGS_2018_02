@@ -52,12 +52,48 @@ CONTAINS
         ! rop = MPI_MAX => Max
         IMPLICIT NONE
         REAL*8 , Intent(In)  :: valin
-        REAL*8 , Intent(InOut) :: valout
+        REAL*8 , Intent(Out) :: valout
         INTEGER, Intent(In)  :: rop
         REAL*8 ::  rval, sval
-        INTEGER :: parity, mtag, left, right, ierr
-        INTEGER :: mstatus(MPI_STATUS_SIZE)
+        INTEGER :: parity, mtag, left, right,ierr
+        INTEGER :: mstat(2, MPI_STATUS_SIZE), irqs(2)
 
+        !There are many more clever ways to do this.  Here, we take a
+        !straightforward approach and use logic similar to our earlier
+        !deadlock exercise (exercise 3)
+
+        valout = valin
+        sval = valout
+
+        left = my_rank -1
+        right = my_rank +1
+        IF ( right   .gt. num_proc-1) right = 0
+        IF ( left   .lt.     0      ) left  = num_proc-1
+
+        parity = MOD(my_rank,2)
+
+        DO i = 1, num_proc -1
+            mtag =i
+
+            CALL MPI_ISend(sval, 1, MPI_DOUBLE_PRECISION, right, mtag, MPI_COMM_WORLD , irqs(1), ierr)
+
+            CALL MPI_IRecv(rval, 1, MPI_DOUBLE_PRECISION,  left, mtag, MPI_COMM_WORLD, irqs(2), ierr)
+
+            CALL MPI_WAITALL(2,irqs,mstat,ierr)
+
+            IF (rop .eq. MPI_SUM) THEN
+                valout = valout+rval
+                sval = rval
+            ENDIF
+            IF (rop .eq. MPI_MIN) THEN
+                valout = MIN(valout,rval)
+                sval = valout
+            ENDIF
+            IF (rop .eq. MPI_MAX) THEN
+                valout = MAX(valout,rval)
+                sval = valout
+            ENDIF
+        ENDDO  
 
 
     END SUBROUTINE MyAllReduceD
