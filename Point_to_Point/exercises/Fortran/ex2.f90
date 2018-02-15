@@ -3,7 +3,7 @@ PROGRAM MAIN
     USE MPI
     IMPLICIT NONE
     CHARACTER*8 :: rank_string, nproc_string, nstring
-    INTEGER :: i, ierr, mstatus, my_rank, num_proc
+    INTEGER :: i, ierr, mstatus(MPI_STATUS_SIZE), my_rank, num_proc
     INTEGER  :: buffer(1:6)
 
     ! When this program works properly, processes will print

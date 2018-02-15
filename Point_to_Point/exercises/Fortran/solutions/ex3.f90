@@ -50,12 +50,20 @@ PROGRAM MAIN
 
     DO i = 1, num_proc -1
         mtag =i
+        IF (parity .eq. 0) THEN
 
-        CALL MPI_Send(buffer(offset), nnum, MPI_INTEGER, right, mtag, MPI_COMM_WORLD ,ierr)
-        offset = offset + nnum
+            CALL MPI_Send(buffer(offset), nnum, MPI_INTEGER, right, mtag, MPI_COMM_WORLD ,ierr)
+            offset = offset + nnum
 
-        CALL MPI_Recv(buffer(offset), nnum, MPI_INTEGER,  left, mtag, MPI_COMM_WORLD, mstatus, ierr)
+            CALL MPI_Recv(buffer(offset), nnum, MPI_INTEGER,  left, mtag, MPI_COMM_WORLD, mstatus, ierr)
+        ELSE
 
+            offset = offset + nnum
+            CALL MPI_Recv(buffer(offset)     , nnum, MPI_INTEGER,  left, mtag, MPI_COMM_WORLD, mstatus, ierr)
+
+            CALL MPI_Send(buffer(offset-nnum), nnum, MPI_INTEGER, right, mtag, MPI_COMM_WORLD ,ierr)
+
+        ENDIF
     ENDDO
 
 

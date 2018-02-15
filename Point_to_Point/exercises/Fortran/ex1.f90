@@ -3,7 +3,7 @@ PROGRAM MAIN
     USE MPI
     IMPLICIT NONE
     CHARACTER*8 :: rank_string, nproc_string, nstring
-    INTEGER :: i, ierr, mstatus, my_rank, num_proc
+    INTEGER :: i, ierr, mstatus(MPI_STATUS_SIZE), my_rank, num_proc
     INTEGER :: nnum=1
     REAL*8  :: the_dot_product = 0.0D0
     REAL*8, ALLOCATABLE :: your_numbers(:), my_numbers(:)
