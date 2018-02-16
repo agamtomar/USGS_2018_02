@@ -6,7 +6,7 @@ To compile the program, simply type "make" .    This will generate an executable
 
 Scale.out peforms a smoothing operation on a 2-D grid, multiple times and in parallel.   The calling syntax is:  
 
-           mpiexec -np N ./program -nx X -ny Y -nt T 
+           mpiexec -np N ./scale.out -nx X -ny Y -nt T 
            
  where the following command-line parameters must be specified
            
@@ -16,6 +16,6 @@ Scale.out peforms a smoothing operation on a 2-D grid, multiple times and in par
            T:   number of iterations to run for (default = 100)  
            
 
-Your job is to carry out a strong- and weak-scaling study using scale.
+Your job is to carry out a strong- and weak-scaling study using scale.out.   This will involve both scripting and plotting.
 
 
