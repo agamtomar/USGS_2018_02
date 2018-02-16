@@ -4,7 +4,7 @@
 export PROG=scale.out
 
 # Directory in which to store log files
-export LOGDIR=scaling_strong
+export LOGDIR=scaling_data
 
 mkdir $LOGDIR
 

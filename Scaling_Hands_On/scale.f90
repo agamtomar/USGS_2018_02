@@ -135,6 +135,10 @@ Contains
         Allocate(   df( 1:nxglobal , 1:nylocal+2 ))
         Allocate(ftemp( 1:nxglobal , 1:nylocal+2 ))
 
+        f = 0
+        df = 0
+        ftemp =0
+
     End Subroutine Initialization
 
     Subroutine Main_Loop()
