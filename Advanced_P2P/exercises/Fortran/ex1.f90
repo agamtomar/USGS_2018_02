@@ -98,7 +98,7 @@ PROGRAM MAIN
         CALL MPI_WAITALL(num_proc-1,rirqs,mstat,ierr)
     ELSE
         CALL MPI_ISEND(icount,1, MPI_INTEGER,0,my_rank,MPI_COMM_WORLD,sirq,ierr)
-        CALL MPI_WAIT(sirq,mstat,ierr)
+        CALL MPI_WAITALL(num_proc-1,rirqs,mstat,ierr)
     ENDIF
 
 
