@@ -16,6 +16,6 @@ Scale.out peforms a smoothing operation on a 2-D grid, multiple times and in par
            T:   number of iterations to run for (default = 100)  
            
 
-
+Your job is to carry out a strong- and weak-scaling study using scale.
 
 
