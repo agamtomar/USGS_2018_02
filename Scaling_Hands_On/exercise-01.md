@@ -16,6 +16,14 @@ Scale.out peforms a smoothing operation on a 2-D grid, multiple times and in par
            T:   number of iterations to run for (default = 100)  
            
 
-Your job is to carry out a strong- and weak-scaling study using scale.out.   This will involve both scripting and plotting.
+Note that the Y gridpoints are distributed across the N processors.  This means that Y should be at least N and that (ideally) N should divide evenly into Y.  Each process contains all X gridpoints in the X-direction; those are not distributed.
+
+Your job is to carry out a strong- and weak-scaling study using scale.out.   
+
+1.  For the strong scaling study, pick at least three combinations of (X,Y) including one where X=1 and time the performance of this code on up to 48 cores.
+
+2.  For the weak scaling study, pick at least three combinations of (X, Y/N), where Y/N is held constant, and time the performance of your code on up to 48 cores.
+
+3. Once you have recorded your timing data
 
 
