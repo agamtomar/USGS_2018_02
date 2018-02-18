@@ -19,3 +19,4 @@ cw.Barrier()
 for i in range(size):
     if (rank == i):
         print('Hello from node {} rank {} out of {} mpi processes'.format(proc, rank, size))
+MPI.Finalize()
