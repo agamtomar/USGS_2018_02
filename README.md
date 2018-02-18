@@ -54,6 +54,39 @@ Install `mpi4py`
 
 ## R
 
-Install `pbdMPI`
+### MPI for R
 
-https://cran.r-project.org/web/packages/pbdMPI/pbdMPI.pdf
+Install `pbdMPI`: https://cran.r-project.org/web/packages/pbdMPI/pbdMPI.pdf
+
+Download the package source and then run the command below. You need
+to substitute the include and lib paths with your installation. It
+assumes you have a working MPI installation
+
+``` bash
+R CMD INSTALL pbdMPI --configure-args="--with-mpi-type=OPENMPI \
+--with-mpi-include=/opt/local/include/openmpi-devel-mp \
+--with-mpi-libpath=/opt/local/lib/openmpi-devel-mp" --no-test-load
+```
+
+### HDF5 for R
+
+Install `hdf5r`: https://cran.r-project.org/package=hdf5r
+
+I installed it using the `.R/Makevars` file since I have a parallel
+HDF5 installation and the standard installation did not work. The
+content of my Makevars file is 
+
+```  bash
+CFLAGS +=             -O3 -Wall -pipe -pedantic -std=gnu99
+CXXFLAGS +=           -O3 -Wall -pipe -Wno-unused -pedantic 
+
+CXX=h5c++
+CC=h5pcc
+LD=h5c++
+```
+
+I then used 
+
+``` R
+install.packages("hdf5r")
+```

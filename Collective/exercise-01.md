@@ -4,4 +4,3 @@
   directory so that the MPI tasks print their `hello` message in
   ascending order.
 
-# Solution
