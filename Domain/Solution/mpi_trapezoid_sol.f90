@@ -1,19 +1,24 @@
-PROGRAM MAIN 
+PROGRAM MAIN
+
+    use MPI
+    
     IMPLICIT NONE
-    include "mpif.h"
-    REAL*8  :: xone,xtwo, myxone,myxtwo, deltax
-    REAL*8  :: local_integral, global_integral
+
+    INTEGER, PARAMETER :: wp = KIND(1.d0)
+
+    REAL(wp)  :: xone,xtwo, myxone,myxtwo, deltax
+    REAL(wp)  :: local_integral, global_integral
     INTEGER :: i, ntrap, ntests, num_proc,my_rank,ierr
-    CHARACTER*8 :: proc_string, rank_str
-    CHARACTER*9 :: loc_str, glob_str
+    CHARACTER(len=9) :: proc_string, rank_str
+    CHARACTER(len=9) :: loc_str, glob_str
 
     Call MPI_INIT( ierr )
     Call MPI_Comm_size(MPI_COMM_WORLD, num_proc,ierr)
     Call MPI_Comm_rank(MPI_COMM_WORLD, my_rank,ierr)
     
-    ntests = 2
+
     ntrap = 1000000/num_proc  !Each rank gets 1000,000/num_proc trapezoids
-    !ntests = 1000  !Uncomment this line once  you are sure your code is working
+    ntests = 1000  !Uncomment this line once  you are sure your code is working
 
 
     xone = 1.0
@@ -21,8 +26,8 @@ PROGRAM MAIN
 
     ! Each rank should integrate between a unique pair of values myxone and myxtwo
     ! What should deltax and myxone be to make this work?
-    deltax = xtwo-xone
-    myxone = xone
+    deltax = (xtwo-xone)/num_proc
+    myxone = xone+my_rank*deltax
     myxtwo = myxone+deltax
 
     Write(proc_string,'(i8)')num_proc
@@ -30,7 +35,7 @@ PROGRAM MAIN
     
     If (my_rank .eq. 0) Then
         Write(6,*)"  Calculating the integral of f(x) = x^3 from 1.0 to 2.0."
-        Write(6,*)"  10,000 times, using 1,000,000 trapezoids and " &
+        Write(6,*)"  1,000 times, using 1,000,000 trapezoids and " &
             & //trim(adjustl(proc_string))//" MPI ranks."
     Endif
 
@@ -52,16 +57,16 @@ PROGRAM MAIN
 Contains
 
 Function myfunc(x) result(xcubed)
-    Real*8, Intent(In) :: x
-    Real*8 :: xcubed
+    Real(wp), Intent(In) :: x
+    Real(wp) :: xcubed
     xcubed = x*x*x
 End Function myfunc
 
 Function trapezoid_int(a,b,ntrap) result(integral)
     !Integrates f(x) from a to b
-    Real*8, Intent(In) :: a, b
+    Real(wp), Intent(In) :: a, b
     Integer, Intent(In) :: ntrap
-    Real*8 :: integral, h, val, x
+    Real(wp) :: integral, h, val, x
     Integer :: i
 
     h = (b-a)/(ntrap-1) ! step size

@@ -5,23 +5,26 @@ CFlags=-g -Wall -pedantic -std=c11
 CXX=mpicxx
 CXFLAGS=-g -Wall -pedantic -std=c++11
 
-all: grid_decomposition.fexe mpi_collatz.fexe mpi_collatz.cexe mpi_trapezoid.fexe mpi_trapezoid.cexe
+all: grid_type.fexe mpi_collatz_sol.fexe mpi_collatz_sol.cexe mpi_trapezoid_sol.fexe mpi_trapezoid_sol.cexe
 
 grid_decomposition.fexe: grid_decomposition.f90
 	$(FC) $(FFLAGS) $< -o $@
 
-mpi_collatz.fexe: mpi_collatz.f90
+grid_type.fexe: grid_type.f90
 	$(FC) $(FFLAGS) $< -o $@
 
-mpi_collatz.cexe: mpi_collatz.cpp
+mpi_collatz_sol.fexe: mpi_collatz_sol.f90
+	$(FC) $(FFLAGS) $< -o $@
+
+mpi_collatz_sol.cexe: mpi_collatz_sol.cpp
 	$(CXX) $(CXLAGS) $< -o $@
 
-mpi_trapezoid.fexe: mpi_trapezoid.f90
+mpi_trapezoid_sol.fexe: mpi_trapezoid_sol.f90
 	$(FC) $(FFLAGS) $< -o $@
 
-mpi_trapezoid.cexe: mpi_trapezoid.cpp
+mpi_trapezoid_sol.cexe: mpi_trapezoid_sol.cpp
 	$(CXX) $(CXLAGS) $< -o $@
 
 
 clean:
-	rm -rf *.fexe *.cexe *.mod *.dSYM
+	rm -rf *.fexe *.cexe *.mod

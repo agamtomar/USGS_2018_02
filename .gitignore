@@ -38,5 +38,7 @@
 README.pdf
 agenda.pdf
 .Rhistory
-.dSYM
+*.dSYM
+*.cexe
+*.fexe
 .markdown-preview.html

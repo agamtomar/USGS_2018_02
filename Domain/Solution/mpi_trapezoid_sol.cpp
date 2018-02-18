@@ -48,8 +48,8 @@ int main(int argc, char** argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 
 
-    ntests = 2;
-    //ntests = 1000; //uncomment once you are sure your code is working
+
+    ntests = 1000; //uncomment once you are sure your code is working
     ntrap = 1000000/num_proc;
 
     xone = 1.0;
@@ -57,8 +57,8 @@ int main(int argc, char** argv) {
     // Each rank should integrate between a unique pair of values myxone and myxtwo
     // What should deltax and myxone be to make this work?
 
-    deltax = (xtwo-xone);
-    myxone = xone;
+    deltax = (xtwo-xone)/num_proc;
+    myxone = xone+my_rank*deltax;
     myxtwo = myxone+deltax;
 
     if (my_rank == 0)
