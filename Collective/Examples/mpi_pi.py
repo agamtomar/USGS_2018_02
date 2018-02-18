@@ -12,4 +12,3 @@ if rank == 0:
     print("{} MPI processes are now active".format(size))
 
 print('Hello from node {} rank {} out of {} mpi processes'.format(proc, rank, size))
-MPI.Finalize()
