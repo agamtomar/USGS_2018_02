@@ -1,0 +1,17 @@
+#!/bin/bash
+  #source ~feathern/soft_scripts/mpich_intel17
+  NTESTS=15
+
+  N=$1
+  export SCALE_LOG=$LOGDIR/strong_nn_$i
+  echo 'Testing with N='$1
+  COUNTER=0
+
+  while [  $COUNTER -lt $NTESTS ]; do
+    echo $COUNTER
+    rm Numbers_N$1
+    mpirun -np 2 python ex1.py -N $1
+    let COUNTER=COUNTER+1 
+    echo $?
+  done
+
