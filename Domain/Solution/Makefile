@@ -5,9 +5,12 @@ CFlags=-g -Wall -pedantic -std=c11
 CXX=mpicxx
 CXFLAGS=-g -Wall -pedantic -std=c++11
 
-all: grid_type.fexe mpi_collatz_sol.fexe mpi_collatz_sol.cexe mpi_trapezoid_sol.fexe mpi_trapezoid_sol.cexe
+all: grid_overlap.fexe grid_type.fexe mpi_collatz_sol.fexe mpi_collatz_sol.cexe mpi_trapezoid_sol.fexe mpi_trapezoid_sol.cexe
 
 grid_decomposition.fexe: grid_decomposition.f90
+	$(FC) $(FFLAGS) $< -o $@
+
+grid_overlap.fexe: grid_overlap.f90
 	$(FC) $(FFLAGS) $< -o $@
 
 grid_type.fexe: grid_type.f90

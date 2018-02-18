@@ -79,10 +79,8 @@ PROGRAM grid
         INTEGER :: ny              ! number of local points in y direction
         INTEGER :: comm            ! cartesian communicator - derived from MPI_COMM_WORLD
         INTEGER :: rank            ! rank in the cartesian communicator
-        REAL(wp), ALLOCATABLE :: s_east(:),  r_east(:)  ! send and receive buffer on the east side of block
-        REAL(wp), ALLOCATABLE :: s_west(:),  r_west(:)  ! send and receive buffer on the west side of block
-        REAL(wp), ALLOCATABLE :: s_north(:), r_north(:) ! send and receive buffer on the north side of block
-        REAL(wp), ALLOCATABLE :: s_south(:), r_south(:) ! send and receive buffer on the south side of block
+        INTEGER :: MPI_row             ! MPI row data type
+        integer :: MPI_col             ! MPI col data type
     END TYPE grid_exchange_type
 
     INTEGER :: num_proc        ! total number of processors
@@ -105,6 +103,9 @@ PROGRAM grid
     CALL initialize(ndummy, gi, ev, wv, nv, sv, f, df)
     CALL main_loop(ndummy, niter, gi, f, df)
 
+    call MPI_Type_free(gi%MPI_col, ierr)
+    call MPI_Type_free(gi%MPI_row, ierr)
+
     CALL MPI_Finalize(ierr)
 
 CONTAINS
@@ -113,61 +114,88 @@ CONTAINS
         INTEGER, INTENT(in) :: nd, ni
         TYPE(grid_exchange_type) :: gi
         REAL(wp) :: f(1-nd:, 1-nd:), df(1-nd:, 1-nd:)
+
+        INTEGER :: rrequest(4), srequest(4)
+
         INTEGER :: n, i, j
         DO n = 1, ni
             ! Simple Smoothing operation
-            DO j = 1, gi%ny
+            ! start updating the rows around the boundary first
+            ! north south
+            DO j = 1, gi%ny, gi%ny
                 DO i = 1, gi%nx
                     df(i,j) = 0.25 * ( f(i+1,j) + f(i-1,j) + f(i,j+1) + f(i,j-1) )
                 ENDDO
             ENDDO
-
-            DO j = 1, gi%ny
+            DO j = 1, gi%ny, gi%ny
                 DO i = 1, gi%nx
                     f(i,j) = df(i,j)
                 ENDDO
             ENDDO
-            CALL exchange_boundary(nd, gi, f)
+            ! west, east
+            DO j = 1, gi%ny
+                DO i = 1, gi%nx, gi%nx
+                    df(i,j) = 0.25 * ( f(i+1,j) + f(i-1,j) + f(i,j+1) + f(i,j-1) )
+                ENDDO
+            ENDDO
+            DO j = 1, gi%ny
+                DO i = 1, gi%nx, gi%nx
+                    f(i,j) = df(i,j)
+                ENDDO
+            ENDDO
+            CALL start_exchange_boundary(nd, gi, rrequest, srequest, f)
+            ! now the interior
+            DO j = 2, gi%ny-1
+                DO i = 2, gi%nx-1
+                    df(i,j) = 0.25 * ( f(i+1,j) + f(i-1,j) + f(i,j+1) + f(i,j-1) )
+                ENDDO
+            ENDDO
+
+            DO j = 2, gi%ny-1
+                DO i = 2, gi%nx-1
+                    f(i,j) = df(i,j)
+                ENDDO
+            ENDDO
+            CALL finish_exchange_boundary(rrequest, srequest)
         ENDDO
     END SUBROUTINE Main_Loop
 
 
-    SUBROUTINE exchange_boundary(nd, gi, t)
+    SUBROUTINE start_exchange_boundary(nd, gi, rrequest, srequest, t)
         INTEGER, INTENT(in) :: nd
         TYPE(grid_exchange_type), INTENT(inout) :: gi
+        INTEGER, intent(inout) :: rrequest(4), srequest(4)
         REAL(wp), INTENT(inout) :: t(1-nd:, 1-nd:)
 
         INTEGER, PARAMETER :: tag = 10
-        INTEGER :: rrequest(4), srequest(4)
         INTEGER :: ierr
         INTEGER :: nx, ny
+
         nx = gi%nx
         ny = gi%ny
-        ! copy the boundaries into the send buffer, do the exchange and copy the receive buffer in dummy points
-        gi%s_east(:) = t(nx,1:ny)
-        gi%s_west(:) = t( 1,1:ny)
-        gi%s_north(:) = t(1:nx,ny)
-        gi%s_south(:) = t(1:nx,1)
         !starting the non-blocking receive first
-        CALL MPI_Irecv(gi%r_east,  ny, MPI_DOUBLE_PRECISION, gi%east,  tag, gi%comm, rrequest(1), ierr)
-        CALL MPI_Irecv(gi%r_west,  ny, MPI_DOUBLE_PRECISION, gi%west,  tag, gi%comm, rrequest(2), ierr)
-        CALL MPI_Irecv(gi%r_north, nx, MPI_DOUBLE_PRECISION, gi%north, tag, gi%comm, rrequest(3), ierr)
-        CALL MPI_Irecv(gi%r_south, nx, MPI_DOUBLE_PRECISION, gi%south, tag, gi%comm, rrequest(4), ierr)
+        CALL MPI_Irecv(t(nx+1,1), 1, gi%MPI_col, gi%east,  tag, gi%comm, rrequest(1), ierr)
+        CALL MPI_Irecv(t(0,   1), 1, gi%MPI_col, gi%west,  tag, gi%comm, rrequest(2), ierr)
+        CALL MPI_Irecv(t(1,ny+1), 1, gi%MPI_row, gi%north, tag, gi%comm, rrequest(3), ierr)
+        CALL MPI_Irecv(t(1,   0), 1, gi%MPI_row, gi%south, tag, gi%comm, rrequest(4), ierr)
 
-        CALL MPI_Isend(gi%s_east,  ny, MPI_DOUBLE_PRECISION, gi%east,  tag, gi%comm, srequest(1), ierr)
-        CALL MPI_Isend(gi%s_west,  ny, MPI_DOUBLE_PRECISION, gi%west,  tag, gi%comm, srequest(2), ierr)
-        CALL MPI_Isend(gi%s_north, nx, MPI_DOUBLE_PRECISION, gi%north, tag, gi%comm, srequest(3), ierr)
-        CALL MPI_Isend(gi%s_south, ny, MPI_DOUBLE_PRECISION, gi%south, tag, gi%comm, srequest(4), ierr)
+        CALL MPI_Isend(t(nx,1), 1, gi%MPI_col, gi%east,  tag, gi%comm, srequest(1), ierr)
+        CALL MPI_Isend(t(1, 1), 1, gi%MPI_col, gi%west,  tag, gi%comm, srequest(2), ierr)
+        CALL MPI_Isend(t(1,ny), 1, gi%MPI_row, gi%north, tag, gi%comm, srequest(3), ierr)
+        CALL MPI_Isend(t(1, 1), 1, gi%MPI_row, gi%south, tag, gi%comm, srequest(4), ierr)
+
+    END SUBROUTINE start_exchange_boundary
+
+    SUBROUTINE finish_exchange_boundary(rrequest, srequest)
+        INTEGER, intent(inout) :: rrequest(4), srequest(4)
+
+        INTEGER :: ierr
 
         CALL MPI_Waitall(4, rrequest, MPI_STATUSES_IGNORE, ierr)
         CALL MPI_Waitall(4, srequest, MPI_STATUSES_IGNORE, ierr)
+    END SUBROUTINE finish_exchange_boundary
 
-        t(nx+1,1:ny) = gi%r_east(:)
-        t(0,   1:ny) = gi%r_west(:)
-        t(1:nx,0)    = gi%r_south(:)
-        t(1:nx,ny+1) = gi%r_north(:)
-    END SUBROUTINE exchange_boundary
-
+    
     SUBROUTINE initialize(nd, gi, ev, wv, nv, sv, f, df)
         INTEGER, INTENT(in) :: nd
         TYPE(grid_exchange_type), INTENT(in) :: gi
@@ -222,6 +250,12 @@ CONTAINS
         ! distribute grid points
         gi%nx = block_size(gi%rank, psize(1), gnx)
         gi%ny = block_size(gi%rank, psize(2), gny)
+        ! Create a data type for a colum and row for the data exchange
+        ! the col type is not really necessary but makes it more convenient
+        call MPI_Type_vector(gi%ny, 1, 1, MPI_DOUBLE_PRECISION, gi%MPI_col, ierr)
+        call MPI_Type_commit(gi%MPI_col, ierr)
+        call MPI_Type_vector(gi%nx, 1, gi%nx+2, MPI_DOUBLE_PRECISION, gi%MPI_row, ierr)
+        call MPI_Type_commit(gi%MPI_row, ierr)
         WRITE(*,*) 'Rank', gi%rank, gi%nx, gi%ny
         ! now setup the neighbor ranks for communication
         ! north/east
@@ -234,29 +268,21 @@ CONTAINS
         ! now print the coordinates of the sending and receiving sides
         ! check for MPI_PROC_NULL
         ! allocate east buffer
-        ALLOCATE(gi%s_east(gi%ny)) 
-        ALLOCATE(gi%r_east(gi%ny))
         IF (gi%east /= MPI_PROC_NULL) THEN
             CALL MPI_Cart_coords(gi%comm, gi%east, ndims, coords, ierr)
             WRITE(*,*) 'rank: ', gi%rank, ' east neighbor: ', gi%east, coords
         END IF
         ! allocate west buffer
-        ALLOCATE(gi%s_west(gi%ny))
-        ALLOCATE(gi%r_west(gi%ny))
         IF (gi%west /= MPI_PROC_NULL) THEN
             CALL MPI_Cart_coords(gi%comm, gi%west, ndims, coords, ierr)
             WRITE(*,*) 'rank: ', gi%rank, ' west neighbor: ', gi%west, coords
         END IF
         ! allocate north buffer
-        ALLOCATE(gi%s_north(gi%nx))
-        ALLOCATE(gi%r_north(gi%nx))
         IF (gi%north /= MPI_PROC_NULL) THEN
             CALL MPI_Cart_coords(gi%comm, gi%north, ndims, coords, ierr)
             WRITE(*,*) 'rank: ', gi%rank, ' north neighbor: ', gi%north, coords
         END IF
         ! allocate so_uth buffer
-        ALLOCATE(gi%s_south(gi%nx))
-        ALLOCATE(gi%r_south(gi%nx))
         IF (gi%south /= MPI_PROC_NULL) THEN
             CALL MPI_Cart_coords(gi%comm, gi%south, ndims, coords, ierr)
             WRITE(*,*) 'r_ank: ', gi%rank, ' south neighbor: ', gi%south, coords
