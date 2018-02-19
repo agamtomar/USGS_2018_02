@@ -30,7 +30,7 @@ PROGRAM MAIN
     CHARACTER*8 :: rank_string, nproc_string, nstring
     INTEGER :: i, ierr, my_rank, num_proc
     INTEGER :: mstatus(MPI_STATUS_SIZE)
-    INTEGER :: nnum=1, left, right, nbuffer, mtag, offset, parity
+    INTEGER :: nnum=1, left, right, nbuffer, mtag, offset
     INTEGER, ALLOCATABLE :: buffer(:)
 
 
@@ -44,8 +44,6 @@ PROGRAM MAIN
 
     offset = 1
 
-
-    parity = MOD(my_rank,2)
 
 
     DO i = 1, num_proc -1
