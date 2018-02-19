@@ -6,8 +6,6 @@ rank = cw.rank
 size = cw.size
 proc = MPI.Get_processor_name()
 
-
-
 if rank == 0:
     print("{} MPI processes are now active".format(size))
 
