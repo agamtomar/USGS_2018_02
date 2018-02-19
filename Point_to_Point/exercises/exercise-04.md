@@ -11,7 +11,8 @@ Consider the example program in this example.  It illustrates a common sequence 
 
 This program almost works, but will crash or hang depending on your MPI implementation.   Can you clear the deadlock?
 
-
+### Note: 
+Owing to the way mpi4py handles collective operations, the Python version of this program will not deadlock, but it is still buggy and will yield incorrect results.  
 
 
 
