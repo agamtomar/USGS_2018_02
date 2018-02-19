@@ -66,6 +66,7 @@ if (rank == 0):
 
     mydest = size-1
     mytag = rank
+    svals[0] = stoken
     cw.Send(svals,dest=mydest,tag=mytag) # Send to rank size-1
 
 if ((rank == 0) or  (rank == size-1)):
