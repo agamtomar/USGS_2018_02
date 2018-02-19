@@ -146,15 +146,15 @@ CONTAINS
         nx = gi%nx
         ny = gi%ny
         !starting the non-blocking receive first
-        CALL MPI_Irecv(t(nx+1,1), 1, gi%MPI_col, gi%east,  tag, gi%comm, rrequest(1), ierr)
-        CALL MPI_Irecv(t(0,   1), 1, gi%MPI_col, gi%west,  tag, gi%comm, rrequest(2), ierr)
-        CALL MPI_Irecv(t(1,ny+1), 1, gi%MPI_row, gi%north, tag, gi%comm, rrequest(3), ierr)
-        CALL MPI_Irecv(t(1,   0), 1, gi%MPI_row, gi%south, tag, gi%comm, rrequest(4), ierr)
+        CALL MPI_Irecv(t(1, ny+1), 1, gi%MPI_col, gi%east,  tag, gi%comm, rrequest(1), ierr)
+        CALL MPI_Irecv(t(1,    0), 1, gi%MPI_col, gi%west,  tag, gi%comm, rrequest(2), ierr)
+        CALL MPI_Irecv(t(nx+1, 1), 1, gi%MPI_row, gi%north, tag, gi%comm, rrequest(3), ierr)
+        CALL MPI_Irecv(t(0,    1), 1, gi%MPI_row, gi%south, tag, gi%comm, rrequest(4), ierr)
 
-        CALL MPI_Isend(t(nx,1), 1, gi%MPI_col, gi%east,  tag, gi%comm, srequest(1), ierr)
-        CALL MPI_Isend(t(1, 1), 1, gi%MPI_col, gi%west,  tag, gi%comm, srequest(2), ierr)
-        CALL MPI_Isend(t(1,ny), 1, gi%MPI_row, gi%north, tag, gi%comm, srequest(3), ierr)
-        CALL MPI_Isend(t(1, 1), 1, gi%MPI_row, gi%south, tag, gi%comm, srequest(4), ierr)
+        CALL MPI_Isend(t(1, ny), 1, gi%MPI_col, gi%east,  tag, gi%comm, srequest(1), ierr)
+        CALL MPI_Isend(t(1, 1) , 1, gi%MPI_col, gi%west,  tag, gi%comm, srequest(2), ierr)
+        CALL MPI_Isend(t(nx, 1), 1, gi%MPI_row, gi%north, tag, gi%comm, srequest(3), ierr)
+        CALL MPI_Isend(t(1,  1), 1, gi%MPI_row, gi%south, tag, gi%comm, srequest(4), ierr)
 
         CALL MPI_Waitall(4, rrequest, MPI_STATUSES_IGNORE, ierr)
         CALL MPI_Waitall(4, srequest, MPI_STATUSES_IGNORE, ierr)
@@ -169,14 +169,20 @@ CONTAINS
         ALLOCATE(    f(1-nd:gi%nx+nd, 1-nd:gi%ny+nd))
         ALLOCATE(   df(1-nd:gi%nx+nd, 1-nd:gi%ny+nd))
 
-        f(gi%nx+1:gi%nx+ndummy, :) = ev
-        f(1-nd:1, :) = wv
-        f(:, gi%ny+1:gi%ny+ndummy) = sv
-        f(:, 1-nd:1) = nv
-        df(gi%nx+1:gi%nx+ndummy, :) = ev
-        df(1-nd:1, :) = wv
-        df(:, gi%ny+1:gi%ny+ndummy) = sv
-        df(:, 1-nd:1) = nv        
+        f( :,:) = float(gi%rank)
+        df(:,:) = float(gi%rank)
+        
+        f( :, gi%ny+1:gi%ny+ndummy) = ev
+        df(:, gi%ny+1:gi%ny+ndummy) = ev
+
+        f( :, 1-nd:1) = wv
+        df(:, 1-nd:1) = wv
+
+        f( gi%nx+1:gi%nx+ndummy, :) = sv
+        df(gi%nx+1:gi%nx+ndummy, :) = sv
+
+        f( 1-nd:1, :) = nv
+        df(1-nd:1, :) = nv        
     END SUBROUTINE initialize
 
 
@@ -216,11 +222,11 @@ CONTAINS
         gi%ny = block_size(gi%rank, psize(2), gny)
         ! Create a data type for a colum and row for the data exchange
         ! the col type is not really necessary but makes it more convenient
-        call MPI_Type_vector(gi%ny, 1, 1, MPI_DOUBLE_PRECISION, gi%MPI_col, ierr)
+        call MPI_Type_vector(gi%nx, 1, 1, MPI_DOUBLE_PRECISION, gi%MPI_col, ierr)
         call MPI_Type_commit(gi%MPI_col, ierr)
-        call MPI_Type_vector(gi%nx, 1, gi%nx+2, MPI_DOUBLE_PRECISION, gi%MPI_row, ierr)
+        call MPI_Type_vector(gi%ny, 1, gi%nx+2, MPI_DOUBLE_PRECISION, gi%MPI_row, ierr)
         call MPI_Type_commit(gi%MPI_row, ierr)
-        WRITE(*,*) 'Rank', gi%rank, gi%nx, gi%ny
+        WRITE(*,*) 'rank:', gi%rank, gi%nx, gi%ny
         ! now setup the neighbor ranks for communication
         ! north/east
         CALL MPI_Cart_shift(gi%comm, 1, 1, gi%west, gi%east, ierr)

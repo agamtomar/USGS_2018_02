@@ -144,28 +144,29 @@ CONTAINS
         nx = gi%nx
         ny = gi%ny
         ! copy the boundaries into the send buffer, do the exchange and copy the receive buffer in dummy points
-        gi%s_east(:) = t(nx,1:ny)
-        gi%s_west(:) = t( 1,1:ny)
-        gi%s_north(:) = t(1:nx,ny)
-        gi%s_south(:) = t(1:nx,1)
+        gi%s_east(:) = t(1:nx, ny)
+        gi%s_west(:) = t(1:nx, 1)
+        gi%s_north(:) = t(nx, 1:ny)
+        gi%s_south(:) = t(1,  1:ny)
         !starting the non-blocking receive first
-        CALL MPI_Irecv(gi%r_east,  ny, MPI_DOUBLE_PRECISION, gi%east,  tag, gi%comm, rrequest(1), ierr)
-        CALL MPI_Irecv(gi%r_west,  ny, MPI_DOUBLE_PRECISION, gi%west,  tag, gi%comm, rrequest(2), ierr)
-        CALL MPI_Irecv(gi%r_north, nx, MPI_DOUBLE_PRECISION, gi%north, tag, gi%comm, rrequest(3), ierr)
-        CALL MPI_Irecv(gi%r_south, nx, MPI_DOUBLE_PRECISION, gi%south, tag, gi%comm, rrequest(4), ierr)
+        CALL MPI_Irecv(gi%r_east,  nx, MPI_DOUBLE_PRECISION, gi%east,  tag, gi%comm, rrequest(1), ierr)
+        CALL MPI_Irecv(gi%r_west,  nx, MPI_DOUBLE_PRECISION, gi%west,  tag, gi%comm, rrequest(2), ierr)
+        CALL MPI_Irecv(gi%r_north, ny, MPI_DOUBLE_PRECISION, gi%north, tag, gi%comm, rrequest(3), ierr)
+        CALL MPI_Irecv(gi%r_south, ny, MPI_DOUBLE_PRECISION, gi%south, tag, gi%comm, rrequest(4), ierr)
 
-        CALL MPI_Isend(gi%s_east,  ny, MPI_DOUBLE_PRECISION, gi%east,  tag, gi%comm, srequest(1), ierr)
-        CALL MPI_Isend(gi%s_west,  ny, MPI_DOUBLE_PRECISION, gi%west,  tag, gi%comm, srequest(2), ierr)
-        CALL MPI_Isend(gi%s_north, nx, MPI_DOUBLE_PRECISION, gi%north, tag, gi%comm, srequest(3), ierr)
+        CALL MPI_Isend(gi%s_east,  nx, MPI_DOUBLE_PRECISION, gi%east,  tag, gi%comm, srequest(1), ierr)
+        CALL MPI_Isend(gi%s_west,  nx, MPI_DOUBLE_PRECISION, gi%west,  tag, gi%comm, srequest(2), ierr)
+        CALL MPI_Isend(gi%s_north, ny, MPI_DOUBLE_PRECISION, gi%north, tag, gi%comm, srequest(3), ierr)
         CALL MPI_Isend(gi%s_south, ny, MPI_DOUBLE_PRECISION, gi%south, tag, gi%comm, srequest(4), ierr)
 
         CALL MPI_Waitall(4, rrequest, MPI_STATUSES_IGNORE, ierr)
         CALL MPI_Waitall(4, srequest, MPI_STATUSES_IGNORE, ierr)
 
-        t(nx+1,1:ny) = gi%r_east(:)
-        t(0,   1:ny) = gi%r_west(:)
-        t(1:nx,0)    = gi%r_south(:)
-        t(1:nx,ny+1) = gi%r_north(:)
+        ! copy the received values into the dummy points
+        t(1:nx, 0)    = gi%r_west(:)
+        t(1:nx, ny+1) = gi%r_east(:)
+        t(0,    1:ny) = gi%r_south(:)
+        t(nx+1, 1:ny) = gi%r_north(:)
     END SUBROUTINE exchange_boundary
 
     SUBROUTINE initialize(nd, gi, ev, wv, nv, sv, f, df)
@@ -177,14 +178,20 @@ CONTAINS
         ALLOCATE(    f(1-nd:gi%nx+nd, 1-nd:gi%ny+nd))
         ALLOCATE(   df(1-nd:gi%nx+nd, 1-nd:gi%ny+nd))
 
-        f(gi%nx+1:gi%nx+ndummy, :) = ev
-        f(1-nd:1, :) = wv
-        f(:, gi%ny+1:gi%ny+ndummy) = sv
-        f(:, 1-nd:1) = nv
-        df(gi%nx+1:gi%nx+ndummy, :) = ev
-        df(1-nd:1, :) = wv
-        df(:, gi%ny+1:gi%ny+ndummy) = sv
-        df(:, 1-nd:1) = nv        
+        f( :,:) = float(gi%rank)
+        df(:,:) = float(gi%rank)
+        
+        f( :, gi%ny+1:gi%ny+ndummy) = ev
+        df(:, gi%ny+1:gi%ny+ndummy) = ev
+
+        f( :, 1-nd:1) = wv
+        df(:, 1-nd:1) = wv
+
+        f( gi%nx+1:gi%nx+ndummy, :) = sv
+        df(gi%nx+1:gi%nx+ndummy, :) = sv
+
+        f( 1-nd:1, :) = nv
+        df(1-nd:1, :) = nv        
     END SUBROUTINE initialize
 
 
@@ -222,7 +229,7 @@ CONTAINS
         ! distribute grid points
         gi%nx = block_size(gi%rank, psize(1), gnx)
         gi%ny = block_size(gi%rank, psize(2), gny)
-        WRITE(*,*) 'Rank', gi%rank, gi%nx, gi%ny
+        WRITE(*,*) 'rank:', gi%rank, gi%nx, gi%ny
         ! now setup the neighbor ranks for communication
         ! north/east
         CALL MPI_Cart_shift(gi%comm, 1, 1, gi%west, gi%east, ierr)
@@ -234,32 +241,32 @@ CONTAINS
         ! now print the coordinates of the sending and receiving sides
         ! check for MPI_PROC_NULL
         ! allocate east buffer
-        ALLOCATE(gi%s_east(gi%ny)) 
-        ALLOCATE(gi%r_east(gi%ny))
+        ALLOCATE(gi%s_east(gi%nx)) 
+        ALLOCATE(gi%r_east(gi%nx))
         IF (gi%east /= MPI_PROC_NULL) THEN
             CALL MPI_Cart_coords(gi%comm, gi%east, ndims, coords, ierr)
             WRITE(*,*) 'rank: ', gi%rank, ' east neighbor: ', gi%east, coords
         END IF
         ! allocate west buffer
-        ALLOCATE(gi%s_west(gi%ny))
-        ALLOCATE(gi%r_west(gi%ny))
+        ALLOCATE(gi%s_west(gi%nx))
+        ALLOCATE(gi%r_west(gi%nx))
         IF (gi%west /= MPI_PROC_NULL) THEN
             CALL MPI_Cart_coords(gi%comm, gi%west, ndims, coords, ierr)
             WRITE(*,*) 'rank: ', gi%rank, ' west neighbor: ', gi%west, coords
         END IF
         ! allocate north buffer
-        ALLOCATE(gi%s_north(gi%nx))
-        ALLOCATE(gi%r_north(gi%nx))
+        ALLOCATE(gi%s_north(gi%ny))
+        ALLOCATE(gi%r_north(gi%ny))
         IF (gi%north /= MPI_PROC_NULL) THEN
             CALL MPI_Cart_coords(gi%comm, gi%north, ndims, coords, ierr)
             WRITE(*,*) 'rank: ', gi%rank, ' north neighbor: ', gi%north, coords
         END IF
-        ! allocate so_uth buffer
-        ALLOCATE(gi%s_south(gi%nx))
-        ALLOCATE(gi%r_south(gi%nx))
+        ! allocate south buffer
+        ALLOCATE(gi%s_south(gi%ny))
+        ALLOCATE(gi%r_south(gi%ny))
         IF (gi%south /= MPI_PROC_NULL) THEN
             CALL MPI_Cart_coords(gi%comm, gi%south, ndims, coords, ierr)
-            WRITE(*,*) 'r_ank: ', gi%rank, ' south neighbor: ', gi%south, coords
+            WRITE(*,*) 'rank: ', gi%rank, ' south neighbor: ', gi%south, coords
         END IF
     END SUBROUTINE setup_partition
 
