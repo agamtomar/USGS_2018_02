@@ -105,9 +105,9 @@ if (rank == 0):
         rreq = cw.Irecv(thiscount, source=i, tag=i)
         reqs.append(rreq)
 
-    # Call the wait method of each request
-    for i in range(size-1):
-        reqs[i].Wait()
+
+    rreq.Waitall(reqs)
+
 else:
     mycount = numpy.zeros(1,dtype='i')
     mycount[0] = icount
@@ -126,16 +126,21 @@ if (rank == 0):
         offset = offset+icount
 
     reqs = []
+    found = False
     for i in range(1,size):
         if (counts[i] > 0):
+            found = True
             rvals=all_lengths[0:2,offset:offset+counts[i]]
             rreq = cw.Irecv(rvals, source=i, tag=i)
             reqs.append(rreq)
             offset = offset+counts[i]
 
-    # Call the wait method of each request
-    for i in range(len(reqs)):
-        reqs[i].Wait()
+
+    # Call the Waitall method of the last Request generated (if one exists)
+    # We pass a list of all requests collected
+    if (found):
+        rreq.Waitall(reqs)
+
 
     # Finally, have rank 0 print out the results
     for i in range(ns):
