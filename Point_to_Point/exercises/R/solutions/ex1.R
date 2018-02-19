@@ -27,6 +27,7 @@ if (.comm.rank == 0) {
         writeLines(toString(myNumbers[i]), f)
     }
     close(f)
+    barrier()
     # receive the data and create dot product
     yourNumbers = numeric(nb)
     recv(yourNumbers, rank.source = 1, tag = 1)
@@ -34,6 +35,7 @@ if (.comm.rank == 0) {
     print(sprintf("The dot product is: %f", dodProduct))
        
 } else if (.comm.rank == 1) {
+    barrier()
     send(myNumbers, rank.dest = 0, tag =1)
     if (file.exists(ofile)) {
         f = file(ofile, "a+")
@@ -42,7 +44,7 @@ if (.comm.rank == 0) {
         }
         close(f)
     } else {
-        print(paste("Error: Rank 1 unable to find", ofile))
+        print("Error: Rank 1 unable to find", ofile)
     }
 }
 
