@@ -6,6 +6,7 @@
 #SBATCH --job-name=scaling_tutorial                    # Job submission name
 #SBATCH --output=scaling.%j.out               # Output file name with Job ID
 #SBATCH -A training
+#SBATCH --reservation=training
 
 # purge all existing modules
 module purge
@@ -13,11 +14,20 @@ module purge
 # load the compiler and mpi
 module load intel/psxe-2018u1
 
+# or load python
+# module purge
+# module load python/pPython3
+
+# or load R
+# module purge
+# module load gcc/6.1 openmpi/1.10.2-gcc6.1.0
+# module load zlib/1.2.11-gcc
+
 # run the code (C/Fortran)
-mpiexec -np 2 ./mpi_imessages.out
+srun --mpi=pmi2 -n 2 ./mpi_imessages.out
 
 # run the code (Python)
-#mpiexec -np 2 python mpi_imessages.py
+#srun --mpi=pmi2 -n 2 python mpi_imessages.py
 
 # run the code (R)
-#mpiexec -np 2 Rscript mpi_imessages.R
+#srun --mpi=pmi2 -n 2 Rscript mpi_imessages.R
