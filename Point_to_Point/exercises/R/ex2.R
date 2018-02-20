@@ -4,7 +4,7 @@ suppressMessages(library(pbdMPI, quietly = TRUE))
 # my_rank = 0; buffer = 0 0 0 2 2 2
 # my_rank = 1; buffer = 0 1 1 1 1 1
 # my_rank = 2; buffer = 2 1 1 2 2 2
-# Depending on your python flush settings, the ordering of the three
+# Depending on your R flush settings, the ordering of the three
 # lines above might change, but buffer values and corresponding rank
 # should remain unchanged.
 
