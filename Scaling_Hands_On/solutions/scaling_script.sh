@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 # The program name
-export PROG=scale.out
+export PROG=scale.exe
 
 # Directory in which to store log files
 export LOGDIR=scaling_data
@@ -25,7 +25,7 @@ for i in ${NY[*]}; do
   rm -f $SCALE_LOG
 
   while [  $COUNTER -lt $MAXNP ]; do
-    mpiexec -np $COUNTER ./$PROG -ny $i >> $SCALE_LOG
+    srun --mpi=pmi2 -n $COUNTER ./$PROG -ny $i >> $SCALE_LOG
     let COUNTER=COUNTER+1
   done
 
@@ -43,7 +43,7 @@ for i in ${NY[*]}; do
 
   while [  $COUNTER -lt $MAXNP ]; do
     let GLOBALNY=$COUNTER*$i
-    mpiexec -np $COUNTER ./$PROG -ny $GLOBALNY >> $SCALE_LOG
+    srun --mpi=pmi2 -n $COUNTER ./$PROG -ny $GLOBALNY >> $SCALE_LOG
     let COUNTER=COUNTER+1
   done
 
