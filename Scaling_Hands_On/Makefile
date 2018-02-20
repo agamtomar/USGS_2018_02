@@ -1,7 +1,7 @@
-FC=mpif90
+FC=mpifort
 FFLAGS=-O3
 
 scale:
 	$(FC) $(FFLAGS) scale.f90 -o scale.exe
 clean:
-	rm -rf scale.out
+	rm -rf scale.exe

@@ -25,7 +25,7 @@ Program Main
     Character(MPI_MAX_PROCESSOR_NAME) :: node_name
     Integer :: ierr, num_proc, my_rank, name_len
 
-    Real*8 :: loop_end, loop_start
+    Real*8 :: loop_end, loop_start, ticklen
 
     Real*8, Allocatable :: f(:,:), df(:,:), ftemp(:,:)
 
@@ -66,9 +66,11 @@ Program Main
     Call grab_args(nxglobal, nyglobal, niter, comm_type)
     Call Initialization()
 
-    Call cpu_time( time= loop_start)
+
+    loop_start = MPI_Wtime()
     Call Main_Loop()
-    Call cpu_time( time = loop_end)
+    loop_end = MPI_Wtime()
+
 
     ! Print out some information regarding the time and problem size
     If (my_rank .eq. 0) Then
