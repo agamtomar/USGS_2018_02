@@ -17,7 +17,7 @@ module load intel/psxe-2018u1
 mpiexec -np 2 ./mpi_messages.out
 
 # run the code (Python)
-#mpiexec -np 2 python ./mpi_messages.out
+#mpiexec -np 2 python mpi_messages.py
 
 # run the code (R)
-#mpiexec -np 2 R ./mpi_messages.out
+#mpiexec -np 2 Rscript mpi_messages.R
