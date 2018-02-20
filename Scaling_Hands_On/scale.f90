@@ -19,8 +19,8 @@
 
 Program Main
     USE ISO_FORTRAN_ENV, ONLY : output_unit
-    Implicit None
-    include "mpif.h"  
+    USE MPI 
+    IMPLICIT NONE
     Character*8 :: rank_string, nproc_string
     Character(MPI_MAX_PROCESSOR_NAME) :: node_name
     Integer :: ierr, num_proc, my_rank, name_len
