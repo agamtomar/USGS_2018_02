@@ -46,6 +46,7 @@ if (rank == 0) {
 ## initialize the data
 mybuffer = integer(nb*size)
 mybuffer[] = rank
+rvals = integer(nb)
 
 left = rank - 1
 right = rank + 1
@@ -62,30 +63,28 @@ print(sprintf("My rank: %d, left: %d, right %d;", rank, left, right))
 parity = rank %% 2
 
 offset = 1
-for (i in 1:size-1) {
+for (i in 1:(size-1)) {
     mtag = 1
     if (parity == 0) {
-        svals = mybuffer[offset:offset+nb-1]
+        svals = mybuffer[offset:(offset+nb-1)]
         send(svals, rank.dest=right, tag=mtag)
 
         offset = offset+nb
-        rvals = mybuffer[offset:offset+nb-1]
-        recv(rvals, rank.source=left, tag=mtag)
-        mybuffer[offset:offset+nb-1] = rvals
+        rvals <- recv(rvals, rank.source=left, tag=mtag)
+        mybuffer[offset:(offset+nb-1)] = rvals
     }
     else {
         offset = offset+nb
-        rvals = mybuffer[offset:offset+nb-1]
-        recv(rvals, rank.source=left, tag=mtag)
-        mybuffer[offset:offset+nb-1] = rvals
+        rvals <- recv(rvals, rank.source=left, tag=mtag)
+        mybuffer[offset:(offset+nb-1)] = rvals
 
-        svals = mybuffer[offset-nb:offset-1]
+        svals = mybuffer[(offset-nb):(offset-1)]
         send(svals, rank.dest=right, tag=mtag)
     }
 }
 
 cat('Buffer sum is: ')
-cat(sum(mybuffer))
+print(mybuffer)
 
 finalize()
 
