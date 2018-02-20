@@ -18,7 +18,10 @@ module load intel/psxe-2018u1
 # module purge
 # module load python/pPython3
 
-
+# or load R
+# module purge
+# module load gcc/6.1 openmpi/1.10.2-gcc6.1.0
+# module load zlib/1.2.11-gcc
 
 # run the code (C/Fortran)
 srun --mpi=pmi2 -n 2 ./mpi_messages.out
