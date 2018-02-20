@@ -1,4 +1,4 @@
-FC=mpifort
+FC=mpif90
 FFLAGS=-O3
 
 scale:
