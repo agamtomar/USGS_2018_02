@@ -14,10 +14,10 @@ module purge
 module load intel/psxe-2018u1
 
 # run the code (C/Fortran)
-mpiexec -np 2 ./mpi_messages.out
+srun --mpi=pmi2 -n 2 ./mpi_messages.out
 
 # run the code (Python)
-#mpiexec -np 2 python mpi_messages.py
+#srun --mpi=pmi2 -n 2 python mpi_messages.py
 
 # run the code (R)
-#mpiexec -np 2 Rscript mpi_messages.R
+#srun --mpi=pmi2 -n 2 Rscript mpi_messages.R
