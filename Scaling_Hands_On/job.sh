@@ -6,6 +6,7 @@
 #SBATCH --job-name=scaling_tutorial                    # Job submission name
 #SBATCH --output=scaling.%j.out               # Output file name with Job ID
 #SBATCH -A training
+#SBATCH --reservation=training
 
 # purge all existing modules
 module purge
