@@ -69,6 +69,7 @@ if (rank == 0):
 
     mydest = size-1
     mytag = rank
+    svals[0] = stoken
     sreq = cw.Isend(svals,dest=mydest,tag=mytag) # Send to rank size-1
 
     sreq.Waitall([sreq,rreq])
