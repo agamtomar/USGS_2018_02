@@ -1,0 +1,5 @@
+CFLAGS +=             -O3 -Wall -pipe -pedantic -std=gnu99
+CXXFLAGS +=           -O3 -Wall -pipe -Wno-unused -pedantic
+CXX=h5pcc
+CC=h5pcc
+LD=h5pcc
