@@ -19,14 +19,15 @@ Prerequisite: MUST Complete hpc 101 webinar prior to class
 ## Day 2
 |Time |Topic| Link to Material|
 |---	|---	|---	|
-|08:30 - 09:00| Non-blocking point to point communication| Slides |
-|09:00 - 10:00| Non-blocking exercises | hands on |
-|10:00 - 10:30| Domain decomposition & MPI communicator | Slides |
-|10:30 - 11:30| Scaling with different domain decomposition approaches | hands on |
-|12:30-  01:00| Profiling MPI programs | Slides |
-|01:00 - 02:00| Overlapping communication and computation | hands on|
-|02:00 - 02:30| Parallel I/O | Slides |
-|02:30 - 04:00| Using parallel I/O & consultation | hands on |
+|09:00 - 9:30  | Point to point communication| hands-on |
+|09:30 - 10:00| Non-blocking point to point communication| Slides |
+|10:00 - 11:00| Non-blocking exercises | hands on |
+|11:00 - 11:30| Domain decomposition & MPI communicator | Slides |
+|01:00 - 01:30| Different domain decomposition approaches | Slides |
+|01:30-  02:00| Profiling MPI programs | Slides |
+|02:00 - 02:30| Intro to HDF5| Slides |
+|02:30 - 03:30| Intro to HDF5 | hands on|
+|03:30 - 04:00| Parallel I/O | slides |
 
 <div></div>
 
