@@ -22,7 +22,7 @@ PROGRAM MAIN
     INTEGER :: data1d(10)
 
 
-    filename='/rc_scratch/feathern/new.hdf5'
+    filename='new.hdf5'
     groupname='folder1'
 
     ! Define the dimensions and name of our data set

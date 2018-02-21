@@ -23,7 +23,7 @@ PROGRAM MAIN
     INTEGER :: data1d(12)
 
 
-    filename='/rc_scratch/feathern/new.hdf5'
+    filename='new.hdf5'
     groupname='folder1'
     subgroup='subfolder1'
 

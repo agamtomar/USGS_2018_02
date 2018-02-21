@@ -9,7 +9,7 @@ PROGRAM MAIN
 
     INTEGER :: error
 
-    filename = '/rc_scratch/feathern/new.hdf5'
+    filename = 'new.hdf5'
     gname1 = 'folder1'
     gname2 = 'folder2'
 

@@ -24,7 +24,7 @@ PROGRAM MAIN
     ! Attribute data
     INTEGER :: adata1, adata2   
 
-    filename='/rc_scratch/feathern/test.hdf5'
+    filename='test.hdf5'
 
     ! Define the dimensions and names of our two data sets
     drank1 = 1
