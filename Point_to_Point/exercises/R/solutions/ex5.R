@@ -15,9 +15,9 @@ myAllReduce <- function(myrank, size, valin, rop)
     }
     parity = rank %% 2
 
-    valout = valin
-    sval = valout
-    rval = 0
+    valout <- valin
+    sval <- valout
+    rval <- 0
     for (i in 1:(size-1)) {
         mtag = 1
         if (parity == 0) {
@@ -29,12 +29,12 @@ myAllReduce <- function(myrank, size, valin, rop)
             send(sval, rank.dest=right, tag=mtag)
         }
         if (rop == 1) {
-            valout = valout+rval
-            sval = rval
+            valout <- valout+rval
+            sval <- rval
         }
         if (rop == 2) {
-            valout = valout*rval
-            sval = rval
+            valout <- valout*rval
+            sval <- rval
         }
     }
     return(valout)
